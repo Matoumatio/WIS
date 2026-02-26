@@ -15,7 +15,14 @@ class ConfigManager:
             "file_delay": 0.8,
             "formats": ".jpg,.jpeg,.png,.gif,.bmp,.webp",
             "sound_enabled": True,
-            "theme_name": "Dark Blue (default)"
+            "theme_active": "Dark Blue",
+            "themes": {
+                "Dark Blue": {
+                    "bg": "#0f1117", "bg2": "#181c26", "bg3": "#1f2433",
+                    "accent": "#4f8ef7", "accent2": "#2ecc8f", "danger": "#e05252",
+                    "warning": "#f0a500", "fg": "#d6dce8", "fg2": "#7a8499", "border": "#2a3045"
+                }
+            }
         }
 
     def load(self):
