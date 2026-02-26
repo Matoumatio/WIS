@@ -185,9 +185,9 @@ class WISApplication:
         
         # Start service
         settings = {
-            "scan_rate": self.config.get("scan_rate"),
-            "file_delay": self.config.get("file_delay"),
-            "send_timeout": self.config.get("send_timeout")
+            "scan_rate": float(self.config.get("scan_rate", 1.0)),
+            "file_delay": float(self.config.get("file_delay", 0.8)),
+            "send_timeout": int(float(self.config.get("send_timeout", 30)))
         }
         self.monitor.start(self.folders, self.webhooks, self.profiles, settings)
 

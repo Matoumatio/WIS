@@ -192,14 +192,20 @@ class SettingsManager(tk.Toplevel):
 
         # Update config manager
         for key, var in self.vars.items():
-            val = var.get()
-            # Basic type conversion
-            if isinstance(self.config.defaults.get(key), float):
-                try: val = float(val)
-                except: val = self.config.defaults.get(key)
-            elif isinstance(self.config.defaults.get(key), bool):
-                val = bool(val)
+            if key in color_keys: continue
             
+            val = var.get()
+            default_val = self.config.defaults.get(key)
+
+            if isinstance(default_val, int):
+                try: val = int(float(val))
+                except: val = default_val
+            elif isinstance(default_val, float):
+                try: val = float(val)
+                except: val = default_val
+            elif isinstance(default_val, bool):
+                val = var.get() == "True" or var.get() == "1"
+
             self.config.set(key, val)
         
         self.config.save()
