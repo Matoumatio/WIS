@@ -7,6 +7,7 @@ from models.webhook import WebhookModel
 from ui.main_window import MainWindow
 from ui.dialogs.folder_manager import FolderManager
 from ui.dialogs.webhook_manager import WebhookManager, SharedProfileModel
+from ui.dialogs.settings_manager import SettingsManager
 
 from services.scanner import ImageScanner
 from services.sender import HttpSender
@@ -55,7 +56,7 @@ class WISApplication:
         commands = {
             "manage_folders": self._open_folder_manager,
             "manage_webhooks": self._open_webhook_manager,
-            "settings": lambda: self.ui.append_log("Settings not implemented", "warn"),
+            "settings": self._open_settings_manager,
             "statistics": lambda: self.ui.append_log("Statistics not implemented", "warn"),
             "start": self._toggle_monitoring
         }
@@ -80,11 +81,11 @@ class WISApplication:
         self.folders = [FolderModel.from_dictionary(f) for f in raw_folders]
 
         # Load theme
-        theme_name = self.config.get("theme_name", "Dark Blue (default)")
-        all_themes = self.config.get("custom_themes", {})
-
-        theme_data = all_themes.get(theme_name, {})
-        self.theme = ThemeModel.from_dict(theme_data)
+        all_themes = self.config.get("themes", {})
+        active_name = self.config.get("theme_active", "Dark Blue")
+    
+        theme_colors = all_themes.get(active_name, all_themes.get("Dark Blue"))
+        self.theme = ThemeModel.from_dict(theme_colors)
 
         # Load Profiles
         raw_profiles = self.config.get("shared_profiles", [])
@@ -148,6 +149,19 @@ class WISApplication:
 
         WebhookManager(self.root, self.webhooks, self.profiles, self.theme, 
                        on_webhooks_save, on_profiles_save)
+    
+    def _open_settings_manager(self):
+        """Opens settings and refreshes the theme/config if changed."""
+        def on_settings_save():
+            self._load_data_models()
+
+            self._update_summaries()
+            self.ui.append_log("Settings updated successfully", "ok")
+
+            if self.monitor.is_running:
+                self.ui.append_log("Restart monitoring to apply behaviour changes", "warn")
+        
+        SettingsManager(self.root, self.config, self.theme, on_settings_save)
     
     #region Monitoring Logic
 
