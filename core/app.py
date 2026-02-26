@@ -8,11 +8,13 @@ from ui.main_window import MainWindow
 from ui.dialogs.folder_manager import FolderManager
 from ui.dialogs.webhook_manager import WebhookManager, SharedProfileModel
 from ui.dialogs.settings_manager import SettingsManager
+from ui.dialogs.stats_dashboard import StatsDashboard
 
 from services.scanner import ImageScanner
 from services.sender import HttpSender
 from services.audio import AudioService
 from services.monitor import MonitoringService
+from services.stats_manager import StatsManager
 
 class WISApplication:
     """Main class that coordinates the application's lifecycle."""
@@ -31,6 +33,7 @@ class WISApplication:
         # Services
         self.audio = AudioService()
         self.sender = HttpSender()
+        self.stats_service = StatsManager("wis_stats.json", self.config.get("stats_config", {}))
         self.scanner = None
         self.monitor = None
 
@@ -57,7 +60,7 @@ class WISApplication:
             "manage_folders": self._open_folder_manager,
             "manage_webhooks": self._open_webhook_manager,
             "settings": self._open_settings_manager,
-            "statistics": lambda: self.ui.append_log("Statistics not implemented", "warn"),
+            "statistics": self._open_statisctics,
             "start": self._toggle_monitoring
         }
 
@@ -67,6 +70,7 @@ class WISApplication:
         # 5. Subscribe to Events
         EventBus.subscribe(AppEvents.LOG_EMITTED, self._handle_log)
         EventBus.subscribe(AppEvents.STATS_UPDATED, self._on_stats_updated)
+        EventBus.subscribe(AppEvents.STATS_UPDATED, self._on_stats_received)
         EventBus.subscribe(AppEvents.MONITORING_STARTED, self._on_monitor_started)
         EventBus.subscribe(AppEvents.MONITORING_STOPPED, self._on_monitor_stopped)
         
@@ -219,6 +223,25 @@ class WISApplication:
         """Updates the sent/failed counters in the UI."""
         self.ui.stat_sent.config(text=str(self.session_sent))
         self.ui.stat_fail.config(text=str(self.session_failed))
+    
+    def _on_stats_received(self, data):
+        is_success = data.get("is_success", False)
+        if is_success:
+            self.session_sent += 1
+        else:
+            self.session_failed += 1
+        self._update_session_pills()
+
+        self.stats_service.record_event(
+            ok=is_success,
+            filename=data.get("filename", "unknown"),
+            webhook=data.get("webhook_name", "unknown"),
+            folder=data.get("folder_name", "unknown"),
+            ext=data.get("extension", "")
+        )
+    
+    def _open_statisctics(self):
+        StatsDashboard(self.root, self.stats_service, self.theme)
     
     def run(self):
         self.root.mainloop()
