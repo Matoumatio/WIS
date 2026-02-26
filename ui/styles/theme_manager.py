@@ -40,3 +40,29 @@ class ThemeManager:
                         background=theme.bg3,
                         troughcolor=theme.bg2, 
                         arrowcolor=theme.fg2)
+    
+    @classmethod
+    def update_widget_theme(cls, widget, theme: ThemeModel):
+        if hasattr(widget, 'theme_roles'):
+            update_map = {}
+            for tk_prop, theme_key in widget.theme_roles.items():
+                color = getattr(theme, theme_key)
+                update_map[tk_prop] = color
+            
+            
+            widget.configure(**update_map)
+
+            if isinstance(widget, tk.Button) and "bg" in widget.theme_roles:
+                    hover = cls.lighten_color(getattr(theme, widget.theme_roles["bg"]))
+                    widget.configure(activebackground=hover)
+    
+    @classmethod
+    def apply_theme_recursive(cls, container, theme: ThemeModel):
+        if isinstance(container, (tk.Frame, tk.LabelFrame, tk.Tk, tk.Toplevel)):
+            role_bg = getattr(container, "theme_roles", {}).get("bg", "bg")
+            container.configure(bg=getattr(theme, role_bg))
+        
+        for child in container.winfo_children():
+            cls.update_widget_theme(child, theme)
+            cls.apply_theme_recursive(child, theme)
+

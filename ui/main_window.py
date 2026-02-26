@@ -68,8 +68,8 @@ class MainWindow:
         self.factory.create_button(parent, "Manage Webhooks", self.commands.get("manage_webhooks"), style="secondary").pack(fill="x", pady=2)
         
         tk.Frame(parent, bg=self.theme.bg, height=10).pack()
-        self.factory.create_button(parent, "Settings", lambda: None, style="secondary").pack(fill="x", pady=2)
-        self.factory.create_button(parent, "Statistics", lambda: None, style="secondary").pack(fill="x", pady=2)
+        self.factory.create_button(parent, "Settings", self.commands.get("settings"), style="secondary").pack(fill="x", pady=2)
+        self.factory.create_button(parent, "Statistics", self.commands.get("statistics"), style="secondary").pack(fill="x", pady=2)
         
         tk.Frame(parent, bg=self.theme.bg, height=10).pack()
         self.start_btn = self.factory.create_button(parent, "Start Monitoring", self.commands.get("start"))
@@ -158,3 +158,15 @@ class MainWindow:
         self.log_box.insert("end", f"{icon} {message}\n", level)
         self.log_box.see("end")
         self.log_box.config(state="disabled")
+    
+    def refresh_theme(self, new_theme: ThemeModel):
+        self.theme = new_theme
+        self.factory.theme = new_theme
+
+        ThemeManager.apply_ttk_styles(new_theme)
+
+        ThemeManager.apply_theme_recursive(self.root, new_theme)
+
+        self.status_pill.configure(bg=new_theme.bg3)
+
+    
