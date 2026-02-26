@@ -59,6 +59,8 @@ class MonitoringService:
     def _process_new_image(self, img_path: str, webhooks: List[WebhookModel],
                            profiles: List[SharedProfileModel], settings: dict):
         filename = os.path.basename(img_path)
+        ext = os.path.splitext(filename)[1].lower()
+        folder_name = os.path.basename(os.path.dirname(img_path))
 
         # Settle delay to ensure file is completely written to disk
         time.sleep(settings.get("file_delay", 0.8))
@@ -84,5 +86,9 @@ class MonitoringService:
             })
         
         EventBus.emit(AppEvents.STATS_UPDATED, {
-            "is_success": success_count == len(enabled_webhooks)
+            "is_success": ok,
+            "filename": filename,
+            "webhook_name": webhook.name,
+            "folder_name": folder_name,
+            "extension": ext
         })
