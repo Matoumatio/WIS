@@ -26,6 +26,28 @@ pip install requests pygame
 
 > `tkinter` is included with most standard Python installations. If missing: `sudo apt install python3-tk` (Debian/Ubuntu)
 
+## Quick Start
+
+The project includes automation scripts to set up the virtual environment and install dependencies automatically:
+
+### Windows:
+Simply run `run_wish_windows.bat`. This will create the `.venv`, install requirements, and launch the app without a persistent console window.
+
+### Linux:
+```bash
+chmod +x run_wish_linux.sh
+./run_wish_linux.sh
+```
+
+### Manual Setup:
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Or .venv\Scripts\activate on Windows
+pip install -r requirements.txt
+python main.py
+```
+
+
 ## Usage
 
 ```bash
