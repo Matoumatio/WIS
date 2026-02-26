@@ -18,9 +18,15 @@ class MonitoringService:
         self.scanner = scanner
         self._stop_event = Event()
         self._seen_files: Set[str] = set()
+        self._is_running = False
+
+    @property
+    def is_running(self):
+        return self._is_running
     
     def start(self, folders: List[FolderModel], webhooks: List[WebhookModel],
               profiles: List[SharedProfileModel], settings: dict):
+        self._is_running = True
         self._stop_event.clear()
         self._seen_files.clear()
 
@@ -33,6 +39,7 @@ class MonitoringService:
         EventBus.emit(AppEvents.MONITORING_STARTED)
     
     def stop(self):
+        self._is_running = False
         self._stop_event.set()
         EventBus.emit(AppEvents.MONITORING_STOPPED)
     
